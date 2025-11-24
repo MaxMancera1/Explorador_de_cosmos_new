@@ -1,70 +1,75 @@
 package org.example.explorador_de_cosmos.controllers;
 
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
+import javafx.scene.control.Alert;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
-import org.example.explorador_de_cosmos.models.Usuario;
-import org.example.explorador_de_cosmos.services.UsuarioService;
-import org.example.explorador_de_cosmos.utils.SessionManager;
-
-import java.io.IOException;
+import org.example.explorador_de_cosmos.launcher.UsuarioService;
 
 public class LoginController {
 
-    @FXML
-    private TextField txtUsername;
-    @FXML
-    private PasswordField txtPassword;
-    @FXML
-    private Label lblError;
+    @FXML private TextField txtUsername;
+    @FXML private PasswordField txtPassword;
 
     private final UsuarioService usuarioService = new UsuarioService();
 
     @FXML
-    private void iniciarSesion() {
-        String username = txtUsername.getText();
-        String password = txtPassword.getText();
+    private void iniciarSesion(ActionEvent event) {
+        String user = txtUsername.getText();
+        String pass = txtPassword.getText();
 
-        Usuario usuario = usuarioService.verificarCredenciales(username, password);
+        boolean valido = usuarioService.validarLogin(user, pass);
 
-        if (usuario != null) {
-            lblError.setText("");
-            System.out.println("Login exitoso para: " + usuario.getNombreUsuario());
-            SessionManager.getInstance().login(usuario); // Guardar sesión
-            try {
-                // Cargar la vista de planetas
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/planet.fxml"));
-                Parent root = loader.load();
-                Stage stage = (Stage) txtUsername.getScene().getWindow();
-                Scene scene = new Scene(root);
-                stage.setScene(scene);
-                stage.setTitle("Visor de Planetas");
-            } catch (IOException e) {
-                e.printStackTrace();
-                lblError.setText("Error al cargar la siguiente vista.");
-            }
+        if (valido) {
+            abrirPantallaPrincipal();
         } else {
-            lblError.setText("Usuario o contraseña incorrectos.");
+            mostrarAlerta("Usuario o contraseña incorrectos");
         }
     }
 
     @FXML
     private void registrarse() {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/registro.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/RegistroExplorador.xml"));
             Parent root = loader.load();
+
             Stage stage = (Stage) txtUsername.getScene().getWindow();
-            Scene scene = new Scene(root);
-            stage.setScene(scene);
-            stage.setTitle("Registro de Nuevo Explorador");
-        } catch (IOException e) {
+            stage.setScene(new Scene(root));
+            stage.setTitle("Crear cuenta - Explorador del Cosmos");
+
+        } catch (Exception e) {
             e.printStackTrace();
-            lblError.setText("Error al abrir la vista de registro.");
+            mostrarAlerta("Error al abrir la pantalla de registro.");
         }
+    }
+
+    private void abrirPantallaPrincipal() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/planet.fxml"));
+            Scene scene = new Scene(loader.load());
+            Stage stage = new Stage();
+            stage.setTitle("Explorador del Cosmos");
+            stage.setScene(scene);
+            stage.show();
+
+            // Cerrar login
+            Stage actual = (Stage) txtUsername.getScene().getWindow();
+            actual.close();
+
+        } catch (Exception e) {
+            System.out.println("❌ Error al abrir pantalla principal: " + e.getMessage());
+        }
+    }
+
+    private void mostrarAlerta(String mensaje) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setHeaderText(null);
+        alert.setContentText(mensaje);
+        alert.show();
     }
 }

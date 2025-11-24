@@ -4,6 +4,7 @@ module org.example.explorador_de_cosmos {
     requires javafx.fxml;
     requires java.sql;
     requires com.google.gson;
+    requires mysql.connector.j;
 
     // Permite que JavaFX FXML acceda a los controladores
     opens org.example.explorador_de_cosmos.controllers to javafx.fxml;

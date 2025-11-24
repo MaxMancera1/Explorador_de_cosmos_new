@@ -25,6 +25,7 @@
 
         <Label fx:id="lblError" style="-fx-text-fill: #ff6b6b; -fx-font-weight:bold;" />
 
+
         <Button maxWidth="Infinity" onAction="#iniciarSesion" style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size:14px;" text="🚀 Iniciar Sesión" />
 
         <Button maxWidth="Infinity" onAction="#registrarse" style="-fx-background-color: transparent; -fx-border-color: white; -fx-text-fill: white;" text="📝 Registrarse" />
