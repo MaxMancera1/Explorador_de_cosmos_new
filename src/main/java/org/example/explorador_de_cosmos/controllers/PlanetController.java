@@ -1,16 +1,14 @@
 package org.example.explorador_de_cosmos.controllers;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.Label;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-
+import javafx.stage.Stage;
 import org.example.explorador_de_cosmos.models.Planet;
 import org.example.explorador_de_cosmos.services.PlanetService;
-import org.example.explorador_de_cosmos.services.ApodService;
 
 public class PlanetController {
 
@@ -19,80 +17,45 @@ public class PlanetController {
     @FXML private Label lblDate;
     @FXML private TextArea txtExplanation;
 
-    private Planet apodActual;                     // Guarda el APOD cargado actualmente
-    private final ApodService apodService = new ApodService();
+    private Planet apodActual;
 
-    // ----------------------- CARGAR APOD -----------------------
     @FXML
     private void cargarApod() {
-        apodActual = PlanetService.obtenerApod();
-
-        if (apodActual != null) {
-
-            lblTitle.setText(apodActual.getTitle());
-            lblDate.setText(apodActual.getDate());
-            txtExplanation.setText(apodActual.getExplanation());
-
-            if (apodActual.getUrl() != null && apodActual.getUrl().endsWith(".jpg")) {
-                imgApod.setImage(new Image(apodActual.getUrl()));
-            } else {
-                imgApod.setImage(null);
-            }
-
-        } else {
-            mostrarAlerta("No se pudo obtener la imagen del día.");
+        Planet apod = PlanetService.obtenerApod();
+        if (apod != null) {
+            apodActual = apod;
+            lblTitle.setText(apod.getTitle());
+            lblDate.setText(apod.getDate());
+            txtExplanation.setText(apod.getExplanation());
+            imgApod.setImage(new Image(apod.getUrl()));
         }
     }
 
-    // ----------------------- GUARDAR APOD EN BD -----------------------
     @FXML
     private void guardarApod() {
-        if (apodActual == null) {
-            mostrarAlerta("Primero carga un APOD.");
-            return;
+        if (apodActual == null) return;
+
+        if (PlanetService.guardarApodEnBD(apodActual)) {
+            mostrarMensaje("APOD guardado en la base de datos.");
         }
-
-        boolean ok = apodService.guardarApod(apodActual);
-
-        if (ok)
-            mostrarAlerta("APOD guardado exitosamente en la base de datos.");
-        else
-            mostrarAlerta("Error al guardar APOD.");
     }
 
-    // ----------------------- DESCARGAR IMAGEN -----------------------
     @FXML
-    private void descargarImagen() {
-        if (apodActual == null || apodActual.getUrl() == null) {
-            mostrarAlerta("No hay imagen para descargar.");
-            return;
-        }
-
+    private void mostrarHistorial() {
         try {
-            String destino = "apod_" + apodActual.getDate().replace("-", "_") + ".jpg";
-            boolean ok = apodService.descargarImagen(apodActual.getUrl(), destino);
-
-            if (ok)
-                mostrarAlerta("Imagen descargada en el archivo: " + destino);
-            else
-                mostrarAlerta("Error al descargar imagen.");
-
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/historial_apod.fxml"));
+            Stage stage = new Stage();
+            stage.setScene(new Scene(loader.load()));
+            stage.setTitle("Historial APOD");
+            stage.show();
         } catch (Exception e) {
-            mostrarAlerta("Error: " + e.getMessage());
+            System.out.println("❌ Error al abrir historial: " + e.getMessage());
         }
     }
 
-    // ----------------------- PDF SEMANA (placeholder) -----------------------
-    @FXML
-    private void generarPdfSemana() {
-        mostrarAlerta("PDF de la última semana será implementado en el siguiente paso 🚀.");
-    }
-
-    // ----------------------- ALERTAS -----------------------
-    private void mostrarAlerta(String mensaje) {
+    private void mostrarMensaje(String msg) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setHeaderText(null);
-        alert.setContentText(mensaje);
+        alert.setContentText(msg);
         alert.show();
     }
 }

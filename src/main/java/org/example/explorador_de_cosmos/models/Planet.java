@@ -1,6 +1,7 @@
 package org.example.explorador_de_cosmos.models;
 
 public class Planet {
+
     private String date;
     private String title;
     private String explanation;
