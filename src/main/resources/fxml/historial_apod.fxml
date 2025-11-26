@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="org.example.explorador_de_cosmos.controllers.HistorialApodController"
+      spacing="15" padding="20">
+
+    <Label text="📚 Historial APOD" style="-fx-font-size: 20px; -fx-font-weight: bold;" />
+
+    <TableView fx:id="tablaApod" prefHeight="400">
+
+        <columns>
+
+            <TableColumn fx:id="colFecha" text="Fecha" prefWidth="120" />
+            <TableColumn fx:id="colTitulo" text="Título" prefWidth="300" />
+            <TableColumn fx:id="colTipo" text="Tipo" prefWidth="100" />
+
+        </columns>
+
+    </TableView>
+
+    <HBox spacing="15">
+        <Button text="⟳ Recargar" onAction="#recargarTabla" />
+        <Button text="🔍 Ver Detalles" onAction="#verDetalles" />
+        <Button text="📄 PDF Última Semana" onAction="#generarPDFSemana" />
+        <Button text="⬅ Volver" onAction="#volver" />
+    </HBox>
+
+</VBox>
