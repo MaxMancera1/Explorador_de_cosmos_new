@@ -18,10 +18,11 @@
     <Label fx:id="lblDate"/>
     <TextArea fx:id="txtExplanation" wrapText="true" prefHeight="150"/>
 
-    <HBox spacing="10">
-        <Button text="🔄  Cargar APOD" onAction="#cargarApod"/>
-        <Button text="💾  Guardar" onAction="#guardarApod"/>
-        <Button text="📚  Historial" onAction="#mostrarHistorial"/>
+    <HBox spacing="10" alignment="CENTER">
+        <Button text="📡 Cargar APOD" onAction="#cargarApod" />
+        <Button text="📥 Guardar" onAction="#guardarApodEnBD" />
+        <Button text="📁 Descargar Imagen" onAction="#descargarImagen" />
+        <Button text="📜 Historial" onAction="#abrirHistorial" />
     </HBox>
 
 </VBox>

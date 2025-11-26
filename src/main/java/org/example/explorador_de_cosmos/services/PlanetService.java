@@ -20,14 +20,15 @@ public class PlanetService {
 
     private static final String NASA_API_KEY = "DEMO_KEY";
 
-    // =======================
-    //   OBTENER APOD DEL DÍA
-    // =======================
+    // ================================
+    //      OBTENER APOD DEL DÍA
+    // ================================
     public static Planet obtenerApod() {
         try {
             String endpoint = "https://api.nasa.gov/planetary/apod?api_key=" + NASA_API_KEY;
             HttpURLConnection conn = (HttpURLConnection) new URL(endpoint).openConnection();
             conn.setRequestMethod("GET");
+            conn.setRequestProperty("Accept", "application/json");
 
             if (conn.getResponseCode() == 200) {
                 InputStreamReader reader = new InputStreamReader(conn.getInputStream());
@@ -35,21 +36,25 @@ public class PlanetService {
                 reader.close();
 
                 return parsearApod(data);
+            } else {
+                System.out.println("❌ Error HTTP: " + conn.getResponseCode());
             }
+
         } catch (Exception e) {
-            System.out.println("❌ Error al obtener APOD: " + e.getMessage());
+            System.out.println("⚠️ Error en la conexión APOD: " + e.getMessage());
         }
         return null;
     }
 
-    // ===============================
+    // ================================
     //   OBTENER APOD POR FECHA
-    // ===============================
+    // ================================
     public static Planet obtenerApodPorFecha(String fecha) {
         try {
             String endpoint = "https://api.nasa.gov/planetary/apod?api_key=" + NASA_API_KEY + "&date=" + fecha;
             HttpURLConnection conn = (HttpURLConnection) new URL(endpoint).openConnection();
             conn.setRequestMethod("GET");
+            conn.setRequestProperty("Accept", "application/json");
 
             if (conn.getResponseCode() == 200) {
                 InputStreamReader reader = new InputStreamReader(conn.getInputStream());
@@ -58,25 +63,26 @@ public class PlanetService {
 
                 return parsearApod(data);
             }
+
         } catch (Exception e) {
-            System.out.println("❌ Error al obtener APOD por fecha: " + e.getMessage());
+            System.out.println("⚠️ Error obteniendo APOD por fecha: " + e.getMessage());
         }
         return null;
     }
 
     private static Planet parsearApod(JsonObject data) {
-        String date = data.get("date").getAsString();
-        String title = data.get("title").getAsString();
-        String explanation = data.get("explanation").getAsString();
-        String url = data.get("url").getAsString();
-        String mediaType = data.get("media_type").getAsString();
-
-        return new Planet(date, title, explanation, url, mediaType);
+        return new Planet(
+                data.get("date").getAsString(),
+                data.get("title").getAsString(),
+                data.get("explanation").getAsString(),
+                data.get("url").getAsString(),
+                data.get("media_type").getAsString()
+        );
     }
 
-    // ===============================
+    // ================================
     //   GUARDAR APOD EN BASE DE DATOS
-    // ===============================
+    // ================================
     public static boolean guardarApodEnBD(Planet apod) {
         String query = """
             INSERT INTO apod (fecha, titulo, explicacion, tipo_medio, url, version, fecha_guardado)
@@ -99,25 +105,27 @@ public class PlanetService {
 
         } catch (Exception e) {
             System.out.println("❌ Error al guardar APOD: " + e.getMessage());
+            return false;
         }
-        return false;
     }
 
-    // ===============================
-    //     DESCARGAR IMAGEN APOD
-    // ===============================
+    // ================================
+    //         DESCARGAR IMAGEN
+    // ================================
     public static String descargarImagen(Planet apod) {
         try {
-            String folder = "descargas/";
+            String escritorio = System.getProperty("user.home") + "/Desktop/";
+            String folder = escritorio + "ExploradorCosmos/APOD/";
+
             File dir = new File(folder);
             if (!dir.exists()) dir.mkdirs();
 
             String filename = "apod_" + apod.getDate().replace("-", "_") + ".jpg";
-            String path = folder + filename;
+            String fullPath = folder + filename;
 
             URL url = new URL(apod.getUrl());
             InputStream in = url.openStream();
-            FileOutputStream out = new FileOutputStream(path);
+            FileOutputStream out = new FileOutputStream(fullPath);
 
             byte[] buffer = new byte[4096];
             int bytesRead;
@@ -129,17 +137,18 @@ public class PlanetService {
             in.close();
             out.close();
 
-            return filename;
+            return fullPath;
 
         } catch (Exception e) {
-            System.out.println("❌ Error al descargar imagen: " + e.getMessage());
+            System.out.println("❌ Error descargando imagen: " + e.getMessage());
+            return null;
         }
-        return null;
     }
 
-    // ===============================
-    //   OBTENER APODS GUARDADOS
-    // ===============================
+
+    // ================================
+    //     OBTENER APODS GUARDADOS
+    // ================================
     public static List<Planet> obtenerApodsGuardados() {
         List<Planet> lista = new ArrayList<>();
 
@@ -150,18 +159,17 @@ public class PlanetService {
              ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
-                Planet apod = new Planet(
+                lista.add(new Planet(
                         rs.getString("fecha"),
                         rs.getString("titulo"),
                         rs.getString("explicacion"),
                         rs.getString("url"),
                         rs.getString("tipo_medio")
-                );
-                lista.add(apod);
+                ));
             }
 
         } catch (Exception e) {
-            System.out.println("❌ Error al obtener APODs guardados: " + e.getMessage());
+            System.out.println("❌ Error leyendo APOD guardados: " + e.getMessage());
         }
 
         return lista;
